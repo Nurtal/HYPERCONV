@@ -30,9 +30,11 @@ def order_nodes(node_list, max_neighbours):
 	
 	## compute distance between nodes
 	for node in node_list:
-		node_to_node_to_distance[node.id] = {}
+		#node_to_node_to_distance[node.id] = {}
+		node_to_node_to_distance[node] = {}
 		for node_2 in node_list:
-			node_to_node_to_distance[node.id][node_2.id] = abs(node.value - node_2.value)
+			#node_to_node_to_distance[node.id][node_2.id] = abs(node.value - node_2.value)
+			node_to_node_to_distance[node][node_2] = abs(node.value - node_2.value)
 
 	## get the n best neighbours
 	for node in node_to_node_to_distance.keys():
@@ -187,13 +189,39 @@ def test_plot(data_file_name):
 
 def create_json_file(node_to_neighbours):
 	##
-	## IN PROGRESS
+	## Create a json file from node to neighbours dictionnary
 	##
-	## TODO:
-	##	- create json file
 	##
 
-	print "Picvert"
+
+	## write nodes
+	nodes = "\"nodes\":["
+	for key in node_to_neighbours.keys():
+		nodes += "{\"name\":\""+str(key.id)+"\",\"group\":\""+str(1)+"\"},"
+	nodes = nodes[:-1]
+	nodes += "]"
+
+	## write links
+	links = "\"links\":["
+	for key in node_to_neighbours:
+		neighbours = node_to_neighbours[key]
+		for n in neighbours:
+			source_id = key.id.split("_")
+			source_id = source_id[-1]
+			target_id = n.id.split("_")
+			target_id = target_id[-1]
+			distance = abs(key.value - n.value)
+			links += "{\"source\":"+str(source_id)+",\"target\":"+str(target_id)+",\"value\":"+str(distance)+"},"
+
+	links = links[:-1]
+	links += "]"
+
+	## write json file
+	data_line = "{"+nodes+","+links+"}"
+	output_file = open("data.json", "w")
+	output_file.write(data_line)
+	output_file.close()
+
 
 
 
@@ -219,6 +247,7 @@ node_list.append(d)
 node_list.append(e)
 node_list.append(f)
 
-truc = generate_random_nodes(100)
-machin = order_nodes(truc, 5)
-test_plot("data_test.json")
+truc = generate_random_nodes(20)
+machin = order_nodes(truc, 4)
+create_json_file(machin)
+test_plot("data.json")
